@@ -49,27 +49,36 @@ public static class AmciMods
         {
             if (pluginInfo.Instance != null)
             {
-                Register(pluginInfo);
+                Register(pluginInfo, (BasePlugin) pluginInfo.Instance);
             }
         }
 
-        IL2CPPChainloader.Instance.PluginLoad += (pluginInfo, _, _) => Register(pluginInfo);
+        IL2CPPChainloader.Instance.PluginLoad += (pluginInfo, _, plugin) => Register(pluginInfo, plugin);
 
         IL2CPPChainloader.Instance.Finished += () =>
         {
+            foreach (var pluginInfo in IL2CPPChainloader.Instance.Plugins.Values)
+            {
+                if (pluginInfo.Instance != null)
+                {
+                    Register(pluginInfo, (BasePlugin) pluginInfo.Instance);
+                }
+            }
+
             RefreshPrimary();
             Apply();
+            Info($"AMCI initialized: registered={_guidByModId.Count} activeGuid={Primary} CurrentModRegistration={CurrentModRegistration.ModRegistrationGuidString}");
         };
     }
 
-    private static void Register(PluginInfo pluginInfo)
+    private static void Register(PluginInfo pluginInfo, BasePlugin plugin)
     {
-        if (pluginInfo.Instance == null)
+        if (plugin == null)
         {
             return;
         }
 
-        var pluginType = pluginInfo.Instance.GetType();
+        var pluginType = plugin.GetType();
         if (AmciIgnoreAttribute.IsIgnored(pluginType))
         {
             return;
