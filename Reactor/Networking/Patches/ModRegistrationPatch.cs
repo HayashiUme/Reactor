@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AmongUs.GameOptions;
 using AmongUs.Matchmaking;
 using HarmonyLib;
+using InnerNet;
 
 namespace Reactor.Networking.Patches
 {
@@ -25,15 +27,27 @@ namespace Reactor.Networking.Patches
             }
         }
 
-        [HarmonyPatch(typeof(CurrentModRegistration), nameof(CurrentModRegistration.TryGetModRegistrationGuid))]
+        [HarmonyPatch(typeof(InnerNetClient), nameof(InnerNetClient.HostGame), typeof(IGameOptions), typeof(GameFilterOptions))]
         public static class LocalGamePatch
         {
-            public static void Postfix(ref bool __result)
+            private static string _savedGuid;
+
+            public static void Prefix()
             {
-                if (__result && AmongUsClient.Instance != null
+                if (AmongUsClient.Instance != null
                     && AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame)
                 {
-                    __result = false;
+                    _savedGuid = CurrentModRegistration.ModRegistrationGuidString;
+                    CurrentModRegistration.ModRegistrationGuidString = "";
+                }
+            }
+
+            public static void Postfix()
+            {
+                if (_savedGuid != null)
+                {
+                    CurrentModRegistration.ModRegistrationGuidString = _savedGuid;
+                    _savedGuid = null;
                 }
             }
         }
