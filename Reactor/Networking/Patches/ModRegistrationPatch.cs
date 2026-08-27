@@ -35,7 +35,7 @@ namespace Reactor.Networking.Patches
             public static void Prefix()
             {
                 if (AmongUsClient.Instance != null
-                    && AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame)
+                    && AmongUsClient.Instance.NetworkMode != NetworkModes.OnlineGame)
                 {
                     _savedGuid = CurrentModRegistration.ModRegistrationGuidString;
                     CurrentModRegistration.ModRegistrationGuidString = "";
