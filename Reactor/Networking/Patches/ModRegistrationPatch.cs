@@ -24,5 +24,18 @@ namespace Reactor.Networking.Patches
                 }
             }
         }
+
+        [HarmonyPatch(typeof(CurrentModRegistration), nameof(CurrentModRegistration.TryGetModRegistrationGuid))]
+        public static class LocalGamePatch
+        {
+            public static void Postfix(ref bool __result)
+            {
+                if (__result && AmongUsClient.Instance != null
+                    && AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame)
+                {
+                    __result = false;
+                }
+            }
+        }
     }
 }
